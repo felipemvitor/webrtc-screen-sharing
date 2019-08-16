@@ -1,0 +1,17 @@
+<mat-card>
+    <mat-card-title>Support</mat-card-title>
+
+    <mat-card-content>
+        <video #remoteVideo autoplay></video>
+    </mat-card-content>
+
+    <mat-card-actions>
+        <button mat-raised-button color="primary" [disabled]=!hasIncomingCall>
+            <mat-icon>phone</mat-icon> Answer
+        </button>
+
+        <button mat-raised-button color="warn" [disabled]="!isCallAnswered">
+            <mat-icon>call_end</mat-icon> Hang Up
+        </button>
+    </mat-card-actions>
+</mat-card>

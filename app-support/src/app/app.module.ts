@@ -11,13 +11,14 @@ import { MatInputModule } from '@angular/material/input'
 import { MatCardModule } from '@angular/material/card'
 import { MatButtonModule } from '@angular/material/button'
 import { MatProgressBarModule } from '@angular/material/progress-bar'
+import { MatIconModule } from '@angular/material/icon';
 
-import { ConfigurationComponent } from './configuration/configuration.component';
+import { VideoConferenceComponent } from './video-conference/video-conference.component'
 
 @NgModule({
     declarations: [
         AppComponent,
-        ConfigurationComponent
+        VideoConferenceComponent
     ],
     imports: [
         BrowserModule,
@@ -28,7 +29,8 @@ import { ConfigurationComponent } from './configuration/configuration.component'
         MatInputModule,
         MatCardModule,
         MatButtonModule,
-        MatProgressBarModule
+        MatProgressBarModule,
+        MatIconModule
     ],
     providers: [],
     bootstrap: [AppComponent]
