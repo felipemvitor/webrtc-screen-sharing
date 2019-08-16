@@ -4,11 +4,7 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { FormsModule } from '@angular/forms'
 import {
-    MatTabsModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatCardModule,
     MatButtonModule,
     MatProgressBarModule,
@@ -25,10 +21,6 @@ import { VideoConferenceComponent } from './video-conference/video-conference.co
     imports: [
         BrowserModule,
         BrowserAnimationsModule,
-        FormsModule,
-        MatTabsModule,
-        MatFormFieldModule,
-        MatInputModule,
         MatCardModule,
         MatButtonModule,
         MatProgressBarModule,

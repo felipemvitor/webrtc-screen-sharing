@@ -1,0 +1,17 @@
+<mat-card>
+	<mat-card-title>Client</mat-card-title>
+
+	<mat-card-content>
+		<video #localVideo autoplay [hidden]="!videoEnabled"></video>
+	</mat-card-content>
+
+	<mat-card-actions>
+		<button mat-raised-button [ngClass]="{active: videoEnabled}" (click)="enableVideo()">
+			<mat-icon>videocam</mat-icon> {{btnEnableVideoText}}
+		</button>
+
+		<button mat-raised-button color="primary">
+			<mat-icon>phone</mat-icon> Call
+		</button>
+	</mat-card-actions>
+</mat-card>

@@ -7,7 +7,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 })
 export class VideoConferenceComponent implements OnInit {
 
-	@ViewChild('remoteVideo') remoteVideo: any
+	@ViewChild('localVideo', { static: true }) localVideo: any
 
 	video: any
 
@@ -24,7 +24,8 @@ export class VideoConferenceComponent implements OnInit {
 	constructor() { }
 
 	ngOnInit() {
-		this.video = this.remoteVideo.nativeElement
+		console.log(this.localVideo)
+		this.video = this.localVideo.nativeElement
 
 		this.showLocalVideo()
 	}
@@ -53,4 +54,5 @@ export class VideoConferenceComponent implements OnInit {
 		}
 		this.videoEnabled = !this.videoEnabled
 	}
+
 }
