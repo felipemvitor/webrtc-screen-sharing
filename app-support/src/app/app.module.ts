@@ -5,13 +5,15 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { FormsModule } from '@angular/forms'
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatFormFieldModule } from '@angular/material/form-field'
-import { MatInputModule } from '@angular/material/input'
-import { MatCardModule } from '@angular/material/card'
-import { MatButtonModule } from '@angular/material/button'
-import { MatProgressBarModule } from '@angular/material/progress-bar'
-import { MatIconModule } from '@angular/material/icon';
+import {
+    MatTabsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatCardModule,
+    MatButtonModule,
+    MatProgressBarModule,
+    MatIconModule
+} from '@angular/material'
 
 import { VideoConferenceComponent } from './video-conference/video-conference.component'
 

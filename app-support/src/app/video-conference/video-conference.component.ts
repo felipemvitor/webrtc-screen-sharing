@@ -8,10 +8,13 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 export class VideoConferenceComponent implements OnInit {
 
 	@ViewChild('remoteVideo') remoteVideo: any
+
 	video: any
 
 	hasIncomingCall = false
 	isCallAnswered = false
+	videoEnabled = false
+	btnEnableVideoText = "Enable Video"
 
 	mediaStreamConstraints = {
 		video: true,
@@ -28,16 +31,26 @@ export class VideoConferenceComponent implements OnInit {
 
 	//This method will be used to mock the interface
 	showLocalVideo() {
-		navigator.mediaDevices.getUserMedia(this.mediaStreamConstraints)
-			.then((mediaStream) => {
-				console.log(this.video)
-				this.video.srcObject = mediaStream
-				this.video.play()
+		if (this.enableVideo) {
+			navigator.mediaDevices.getUserMedia(this.mediaStreamConstraints)
+				.then((mediaStream) => {
+					this.video.srcObject = mediaStream
+					this.video.play()
 
-				console.log("Received local stream")
-			})
-			.catch((error) => {
-				console.log("Error (getUserMedia): " + error)
-			})
+					console.log("Received local stream")
+				})
+				.catch((error) => {
+					console.log("Error (getUserMedia): " + error)
+				})
+		}
+	}
+
+	enableVideo() {
+		if (this.videoEnabled) {
+			this.btnEnableVideoText = "Enable Video"
+		} else {
+			this.btnEnableVideoText = "Disable Video"
+		}
+		this.videoEnabled = !this.videoEnabled
 	}
 }
