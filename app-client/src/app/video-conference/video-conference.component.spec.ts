@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { VideoConferenceComponent } from './video-conference.component';
+import { VideoConferenceComponent } from "./VideoConferenceComponent";
 
 describe('VideoConferenceComponent', () => {
   let component: VideoConferenceComponent;

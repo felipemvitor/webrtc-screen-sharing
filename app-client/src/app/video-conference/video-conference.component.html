@@ -2,7 +2,10 @@
 	<mat-card-title>Client</mat-card-title>
 
 	<mat-card-content>
-		<video #localVideo autoplay [hidden]="!videoEnabled"></video>
+		<mat-grid-list cols="2">
+			<video #localVideo autoplay [hidden]="!videoEnabled"></video>
+			<video #remoteVideo autoplay [hidden]="!videoEnabled"></video>
+		</mat-grid-list>
 	</mat-card-content>
 
 	<mat-card-actions>
@@ -10,7 +13,7 @@
 			<mat-icon>videocam</mat-icon> {{btnEnableVideoText}}
 		</button>
 
-		<button mat-raised-button color="primary"(click)="makeCall()">
+		<button mat-raised-button color="primary" (click)="makeCall()">
 			<mat-icon>phone</mat-icon> Call
 		</button>
 	</mat-card-actions>
