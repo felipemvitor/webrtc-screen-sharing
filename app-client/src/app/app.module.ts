@@ -5,30 +5,30 @@ import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import {
-	MatCardModule,
-	MatButtonModule,
-	MatProgressBarModule,
-	MatIconModule,
-	MatGridListModule
+    MatCardModule,
+    MatButtonModule,
+    MatProgressBarModule,
+    MatIconModule,
+    MatGridListModule
 } from '@angular/material'
 
-import { VideoConferenceComponent } from "./video-conference/VideoConferenceComponent";
+import { VideoConferenceComponent } from "./video-conference/video-conference.component";
 
 @NgModule({
-	declarations: [
-		AppComponent,
-		VideoConferenceComponent
-	],
-	imports: [
-		BrowserModule,
-		BrowserAnimationsModule,
-		MatCardModule,
-		MatButtonModule,
-		MatProgressBarModule,
-		MatIconModule,
-		MatGridListModule
-	],
-	providers: [],
-	bootstrap: [AppComponent]
+    declarations: [
+        AppComponent,
+        VideoConferenceComponent
+    ],
+    imports: [
+        BrowserModule,
+        BrowserAnimationsModule,
+        MatCardModule,
+        MatButtonModule,
+        MatProgressBarModule,
+        MatIconModule,
+        MatGridListModule
+    ],
+    providers: [],
+    bootstrap: [AppComponent]
 })
 export class AppModule { }
