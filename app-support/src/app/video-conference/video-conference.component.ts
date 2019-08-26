@@ -7,7 +7,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 })
 export class VideoConferenceComponent implements OnInit {
 
-	@ViewChild('remoteVideo') remoteVideo: any
+	@ViewChild('remoteVideo', {static: true}) remoteVideo: any
 
 	video: any
 
