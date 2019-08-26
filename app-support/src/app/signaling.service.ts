@@ -9,7 +9,6 @@ const SERVER_URL = "http://localhost:3000"
     providedIn: 'root'
 })
 export class SignalingService {
-
     private socket: any
 
     constructor() {
