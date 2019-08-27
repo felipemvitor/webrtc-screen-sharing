@@ -13,7 +13,7 @@ webSocket.sockets.on('connection', (socket) => {
 
     socket.on('message', (message) => {
         console.log('Message received: ' + message)
-        socket.broadcast.emit('message', message)
+        socket.broadcast.emit('message', JSON.stringify(message))
     })
 
     socket.on('create or join', (room) => {

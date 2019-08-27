@@ -1,194 +1,131 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { SignalingService } from '../signaling.service';
+import * as socketIo from 'socket.io-client';
+
+const SERVER_URL = 'http://localhost:3000'
 
 @Component({
-	selector: 'app-video-conference',
-	templateUrl: './video-conference.component.html',
-	styleUrls: ['./video-conference.component.css']
+  selector: 'app-video-conference',
+  templateUrl: './video-conference.component.html',
+  styleUrls: ['./video-conference.component.css']
 })
 export class VideoConferenceComponent implements OnInit {
 
-	@ViewChild('localVideo', { static: true }) localVideo: any
-	@ViewChild('remoteVideo', { static: true }) remoteVideo: any
+  @ViewChild('localVideo', { static: true }) localVideo: any
 
-	lVideo: any
-	rVideo: any
+  lVideo: any
+  localStream: MediaStream
+  localPeerConnection: any
+  socket: any
 
-	localStream: any
-	remoteStream: any
+  hasIncomingCall = false
+  isCallAnswered = false
+  videoEnabled = true
+  btnEnableVideoText = "Enable Video"
 
-	servers: any = null
-	localPeerConnection: any
-	remotePeerConnection: any
+  mediaStreamConstraints = {
+    video: {
+      width: 480,
+      height: 320
+    },
+    audio: false
+  }
 
-	hasIncomingCall = false
-	isCallAnswered = false
-	videoEnabled = true
-	btnEnableVideoText = "Enable Video"
+  rtcConfig = {
+    iceServers: [{
+      urls: 'stun:stun.l.google.com:19302'
+    }]
+  }
 
-	mediaStreamConstraints = {
-		video: {
-			width: 480,
-			height: 320
-		},
-		audio: false
-	}
+  offerOptions = {
+    offerToReceiveVideo: 1
+  }
 
-	offerOptions = {
-		offerToReceiveVideo: 1
-	}
+  constructor(private service: SignalingService) { }
 
-	constructor(private service: SignalingService) { }
+  ngOnInit() {
+    console.log(this.localVideo)
+    this.lVideo = this.localVideo.nativeElement
 
-	ngOnInit() {
-		console.log(this.localVideo)
-		this.lVideo = this.localVideo.nativeElement
+    this.showLocalVideo()
 
-		this.showLocalVideo()
-	}
+    this.socket = socketIo(SERVER_URL)
 
-	//This method will be used to mock the interface
-	showLocalVideo() {
-		if (this.enableVideo) {
-			navigator.mediaDevices.getUserMedia(this.mediaStreamConstraints)
-				.then((mediaStream) => {
-					this.lVideo.srcObject = mediaStream
-					this.lVideo.play()
-					this.localStream = mediaStream
+  }
 
-					console.log("Received local stream")
-				})
-				.catch((error) => {
-					console.log("Error (getUserMedia): " + error)
-				})
-		}
-	}
+  //This method will be used to mock the interface
+  showLocalVideo() {
+    if (this.enableVideo) {
+      navigator.mediaDevices.getUserMedia(this.mediaStreamConstraints)
+        .then((mediaStream) => {
+          this.lVideo.srcObject = mediaStream
+          this.lVideo.play()
+          this.localStream = mediaStream
 
-	enableVideo() {
-		if (this.videoEnabled) {
-			this.btnEnableVideoText = "Enable Video"
-		} else {
-			this.btnEnableVideoText = "Disable Video"
-		}
-		this.videoEnabled = !this.videoEnabled
-	}
+          console.log("Received local stream")
 
-	makeCall() {
-		console.log("Make Call")
-		this.service.createOrJoin('room name')
-		// this.localPeerConnection = new RTCPeerConnection(this.servers)
+          this.createPeerConnection()
+        })
+        .catch((error) => {
+          console.log("Error (getUserMedia): " + error)
+        })
+    }
+  }
 
-		// this.localPeerConnection.addEventListener('icecandidate', this.onConnection)
-		// this.localPeerConnection.addEventListener('iceconnectionstatechange', this.onConnectionChanged)
+  enableVideo() {
+    if (this.videoEnabled) {
+      this.btnEnableVideoText = "Enable Video"
+    } else {
+      this.btnEnableVideoText = "Disable Video"
+    }
+    this.videoEnabled = !this.videoEnabled
+  }
 
-		// this.remotePeerConnection = new RTCPeerConnection(this.servers)
+  createPeerConnection() {
+    try {
+      this.localPeerConnection = new RTCPeerConnection(this.rtcConfig)
+      this.localPeerConnection.onicecandidate = this.onIceCandidate
+    } catch (exeption) {
+      console.log('Failed Creating RTCPeerConnecion: ' + exeption)
+      return
+    }
 
-		// this.remotePeerConnection.addEventListener('icecandidate', this.onConnection)
-		// this.remotePeerConnection.addEventListener('iceconnectionstatechange', this.onConnectionChanged)
-		// this.remotePeerConnection.addEventListener('addstream', this.getRemoteMediaStream)
+    this.localPeerConnection.addStream(this.localStream)
 
-		// this.localPeerConnection.addStream(this.localStream)
-		// this.localPeerConnection.createOffer(this.offerOptions)
-		// 	.then(this.createdOffer)
-		// 	.catch()
-	}
+    console.log('RTCPeerConnection created')
+  }
 
-	private onConnection = (event) => {
-		console.log("onIceCandidateEvent")
-		const peerConnection = event.target
-		const iceCandidate = event.candidate
+  makeCall() {
+    console.log("Make Call")
+    this.localPeerConnection.createOffer()
+      .then((sessionDescription) => {
+        this.localPeerConnection.setLocalDescription(sessionDescription)
+        this.sendMessage(sessionDescription)
 
-		if (iceCandidate) {
-			const newIceCandidate = new RTCIceCandidate(iceCandidate)
-			const otherPeer = this.getOtherPeer(peerConnection)
+      })
+      .catch((event) => {
+        console.log('Error creating offer: ' + event)
+      })
 
-			otherPeer.addIceCandidate(newIceCandidate)
-				.then(() => {
-					console.log(`${this.getPeerName(peerConnection)} addIceCandidate success.`)
-				}).catch(error => {
-					`${this.getPeerName(peerConnection)} failed to add ICE Candidate:\n` +
-						`${error.toString()}.`
-				})
-			console.log(`${this.getPeerName(peerConnection)} ICE candidate:\n` +
-				`${event.candidate.candidate}.`)
-		}
-	}
+  }
 
-	private onConnectionChanged = (event) => {
-		const peerConnection = event.target;
-		console.log('ICE state change event: ', event);
-		console.log(`${this.getPeerName(peerConnection)} ICE state: ` +
-			`${peerConnection.iceConnectionState}.`)
-	}
+  private onIceCandidate = (event) => {
+    console.log('Ice candidate event: ' + event)
 
-	private getRemoteMediaStream(event) {
-		const mediaStream = event.stream
-		this.rVideo.srcObject = mediaStream
-		this.rVideo.play()
-		this.remoteStream = mediaStream
-	}
+    if (event.candidate) {
+      this.sendMessage({
+        type: 'candidate',
+        label: event.candidate.sdpMLineIndex,
+        id: event.candidate.sdpMid,
+        candidate: event.candidate.candidate
+      })
+    } else {
+      console.log('End of candidates')
+    }
+  }
 
-	private getOtherPeer(peerConnection) {
-		return (peerConnection == this.localPeerConnection) ?
-			this.remotePeerConnection : this.localPeerConnection
-	}
-
-	private createdOffer = (description) => {
-		console.log(`Offer from localPeerConnection:\n${description.sdp}`)
-
-		console.log('localPeerConnection setLocalDescription start.');
-		this.localPeerConnection.setLocalDescription(description)
-			.then(() => {
-				this.setLocalDescriptionSuccess(this.localPeerConnection);
-			}).catch(this.setSessionDescriptionError);
-
-		console.log('remotePeerConnection setRemoteDescription start.');
-		this.remotePeerConnection.setRemoteDescription(description)
-			.then(() => {
-				this.setRemoteDescriptionSuccess(this.remotePeerConnection);
-			}).catch(this.setSessionDescriptionError);
-
-		console.log('remotePeerConnection createAnswer start.');
-		this.remotePeerConnection.createAnswer()
-			.then(this.createdAnswer)
-			.catch(this.setSessionDescriptionError);
-	}
-
-	private createdAnswer = (description) => {
-		console.log(`Answer from remotePeerConnection:\n${description.sdp}.`);
-
-		console.log('remotePeerConnection setLocalDescription start.');
-		this.remotePeerConnection.setLocalDescription(description)
-			.then(() => {
-				this.setLocalDescriptionSuccess(this.remotePeerConnection);
-			}).catch(this.setSessionDescriptionError);
-
-		console.log('localPeerConnection setRemoteDescription start.');
-		this.localPeerConnection.setRemoteDescription(description)
-			.then(() => {
-				this.setRemoteDescriptionSuccess(this.remotePeerConnection);
-			}).catch(this.setSessionDescriptionError);
-	}
-
-	private setDescriptionSuccess(peerConnection, functionName) {
-		const peerName = this.getPeerName(peerConnection);
-		console.log(`${peerName} ${functionName} complete.`);
-	}
-
-	private setSessionDescriptionError(error) {
-		console.log(`Failed to create session description: ${error.toString()}.`)
-	}
-
-	private setLocalDescriptionSuccess(peerConnection) {
-		this.setDescriptionSuccess(peerConnection, 'setLocallDescription');
-	}
-
-	private setRemoteDescriptionSuccess(peerConnection) {
-		this.setDescriptionSuccess(peerConnection, 'setRemoteDescription');
-	}
-
-	private getPeerName(peerConnection) {
-		return (peerConnection === this.localPeerConnection) ?
-			'localPeerConnection' : 'remotePeerConnection'
-	}
+  sendMessage(message) {
+    console.log('App client sending message: ' + message)
+    this.socket.emit('message', message)
+  }
 }

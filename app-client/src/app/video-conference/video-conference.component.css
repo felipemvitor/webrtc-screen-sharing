@@ -1,5 +1,5 @@
 mat-card{
-    width: 1080px;
+    width: 800px;
     margin: 20px auto;
     background: whitesmoke;
 }
@@ -15,6 +15,7 @@ mat-card-content{
 video{
     border: solid 1px black;
     margin: 16px;
+    transform: scaleX(-1)
 }
 
 mat-card-actions{
