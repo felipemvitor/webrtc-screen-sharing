@@ -11,52 +11,21 @@ const SERVER_URL = "http://localhost:3000"
 export class SignalingService {
     private socket: any
 
-    constructor() {
+    constructor() { }
+
+    public listenToSocket() {
         this.socket = socketIo(SERVER_URL)
     }
 
-    public createOrJoin(room: string) {
-        this.socket.emit('create or join', room)
+    public sendMessage(message) {
+        console.log('Sending message to socket.')
+        this.socket.emit('message', message)
     }
 
-    public onCreated(): Observable<string> {
+    public onMessage(): Observable<string> {
         return new Observable<string>(observer => {
-            this.socket.on('created', (data: string) => {
-                observer.next(data)
-            })
-        })
-    }
-
-    public onJoin(): Observable<string> {
-        return new Observable<string>(observer => {
-            this.socket.on('join', (data: string) => {
-                observer.next(data)
-            })
-        })
-    }
-
-    public onJoined(): Observable<string> {
-        return new Observable<string>(observer => {
-            this.socket.on('joined', (data: string) => {
-                observer.next(data)
-            })
-        })
-    }
-
-
-    public onReady(): Observable<string> {
-        return new Observable<string>(observer => {
-            this.socket.on('ready', (data: string) => {
-                observer.next(data)
-            })
-        })
-    }
-
-
-    public onIpAddr(): Observable<string> {
-        return new Observable<string>(observer => {
-            this.socket.on('ipaddr', (data: string) => {
-                observer.next(data)
+            this.socket.on('message', (message) => {
+                observer.next(message)
             })
         })
     }
