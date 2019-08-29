@@ -1,19 +1,28 @@
 <mat-card>
-	<mat-card-title>Client</mat-card-title>
+    <mat-card-title>Client</mat-card-title>
 
-	<mat-card-content>
-		<mat-grid-list cols="2">
-			<video #localVideo autoplay [hidden]="!videoEnabled"></video>
-		</mat-grid-list>
-	</mat-card-content>
+    <mat-card-content>
+        <mat-grid-list cols="2">
+            <div>
+                <video #localVideo autoplay></video>
+                <p> Client</p>
+            </div>
+            <div>
+                <video #remoteVideo autoplay></video>
+                <p> Support </p>
+            </div>
 
-	<mat-card-actions>
-		<button mat-raised-button [ngClass]="{active: videoEnabled}" (click)="enableVideo()">
-			<mat-icon>videocam</mat-icon> {{btnEnableVideoText}}
-		</button>
+        </mat-grid-list>
+    </mat-card-content>
 
-		<button mat-raised-button color="primary" (click)="makeCall()">
-			<mat-icon>phone</mat-icon> Call
-		</button>
-	</mat-card-actions>
+    <mat-card-actions>
+        <button mat-raised-button [ngClass]="{active: videoEnabled}" (click)="connect()">{{btnConnection}}</button>
+
+        <button mat-raised-button color="primary" (click)="makeCall()">
+            <mat-icon>phone</mat-icon> Call
+        </button>
+        <button mat-raised-button color="primary" (click)="answerCall()">
+            <mat-icon>ring_volume</mat-icon> Answer
+        </button>
+    </mat-card-actions>
 </mat-card>

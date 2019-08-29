@@ -1,64 +1,23 @@
 import { Injectable } from '@angular/core';
 
-import * as socketIo from 'socket.io-client'
-import { Observable } from 'rxjs';
-
-const SERVER_URL = "http://localhost:3000"
-
 @Injectable({
     providedIn: 'root'
 })
 export class SignalingService {
+    private socket: WebSocket
 
-    private socket: any
+    constructor() { }
 
-    constructor() {
-        this.socket = socketIo(SERVER_URL)
+    public listenToSocket() {
+        this.socket = new WebSocket('ws://localhost:3000')
     }
 
-    public createOrJoin(room: string) {
-        this.socket.emit('create or join', room)
+    public addEventListener(event, listener) {
+        this.socket.addEventListener(event, listener)
     }
 
-    public onCreated(): Observable<string> {
-        return new Observable<string>(observer => {
-            this.socket.on('created', (data: string) => {
-                observer.next(data)
-            })
-        })
-    }
-
-    public onJoin(): Observable<string> {
-        return new Observable<string>(observer => {
-            this.socket.on('join', (data: string) => {
-                observer.next(data)
-            })
-        })
-    }
-
-    public onJoined(): Observable<string> {
-        return new Observable<string>(observer => {
-            this.socket.on('joined', (data: string) => {
-                observer.next(data)
-            })
-        })
-    }
-
-
-    public onReady(): Observable<string> {
-        return new Observable<string>(observer => {
-            this.socket.on('ready', (data: string) => {
-                observer.next(data)
-            })
-        })
-    }
-
-
-    public onIpAddr(): Observable<string> {
-        return new Observable<string>(observer => {
-            this.socket.on('ipaddr', (data: string) => {
-                observer.next(data)
-            })
-        })
+    sendMessage(message) {
+        console.log('Sending message to Signaling Server: ' + message.type)
+        this.socket.send(JSON.stringify(message))
     }
 }

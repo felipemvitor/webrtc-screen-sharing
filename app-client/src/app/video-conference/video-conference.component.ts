@@ -1,8 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { SignalingService } from '../signaling.service';
-import * as socketIo from 'socket.io-client';
-
-const SERVER_URL = 'http://localhost:3000'
 
 @Component({
     selector: 'app-video-conference',
@@ -12,17 +9,20 @@ const SERVER_URL = 'http://localhost:3000'
 export class VideoConferenceComponent implements OnInit {
 
     username = "Client"
+    otherUsername:any
 
     @ViewChild('localVideo', { static: true }) localVideo: any
+    @ViewChild('remoteVideo', { static: true }) remoteVideo: any
 
     lVideo: any
+    rVideo: any
     localStream: MediaStream
+    remoteStream: MediaStream
+
     peerConnection: any
 
-    hasIncomingCall = false
-    isCallAnswered = false
-    videoEnabled = true
-    btnEnableVideoText = "Disable Video"
+    btnConnection = "Connect"
+    connected = false
 
     mediaStreamConstraints = {
         video: {
@@ -42,36 +42,147 @@ export class VideoConferenceComponent implements OnInit {
         offerToReceiveVideo: 1
     }
 
-    constructor(private service: SignalingService) { }
+    constructor(private server: SignalingService) { }
 
     ngOnInit() {
-        console.log(this.localVideo)
         this.lVideo = this.localVideo.nativeElement
-
-        this.showLocalVideo()
+        this.rVideo = this.remoteVideo.nativeElement
+        this.configureSocket()
     }
 
-    //This method will be used to mock the interface
-    private showLocalVideo() {
-        if (this.enableVideo) {
-            navigator.mediaDevices.getUserMedia(this.mediaStreamConstraints)
-                .then((mediaStream) => {
-                    this.lVideo.srcObject = mediaStream
-                    this.lVideo.play()
-                    this.localStream = mediaStream
-                })
-                .catch((error) => {
-                    console.log("Error (getUserMedia): " + error)
-                })
+    private configureSocket() {
+        this.server.listenToSocket()
+        this.server.addEventListener('open', this.onOpen)
+        this.server.addEventListener('message', this.onMessage)
+    }
+
+    private onOpen = () => {
+        console.log('Connected to the signaling server.')
+    }
+
+    private onError = (error) => {
+        console.error('Error: ' + error)
+    }
+
+    private onMessage = (message) => {
+        console.log('Message received: ' + message.data)
+
+        const data = JSON.parse(message.data)
+
+        switch (data.type) {
+            case 'login':
+                this.handleLogin(data.success)
+                break
+            case 'offer':
+                this.handleOffer(data.offer, data.username)
+                break
+            case 'answer':
+                this.handleAnswer(data.answer)
+                break
+            case 'candidate':
+                this.handleCandidate(data.candidate)
+                break
+            case 'close':
+                this.handleClose()
+                break
+            default:
+                break
+
         }
     }
 
-    private enableVideo() {
-        if (this.videoEnabled) {
-            this.btnEnableVideoText = "Enable Video"
+    handleLogin = async (success) => {
+        if (success === false) {
+            alert('Username already taken')
         } else {
-            this.btnEnableVideoText = "Disable Video"
+            this.localStream = await navigator.mediaDevices.getUserMedia(this.mediaStreamConstraints)
+            this.lVideo.srcObject = this.localStream
+            this.lVideo.play()
+
+            this.peerConnection = new RTCPeerConnection(this.rtcConfig)
+            this.peerConnection.addStream(this.localStream)
+            this.peerConnection.onaddstream = (event => {
+                this.rVideo.srcObject = event.stream
+                this.remoteStream = event.stream
+            })
+            this.peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    this.server.sendMessage({
+                        type: 'candidate',
+                        candidate: event.candidate,
+                        otherUsername: this.otherUsername
+                    })
+                }
+            }
         }
-        this.videoEnabled = !this.videoEnabled
+    }
+
+    handleOffer = (offer, username) => {
+        this.otherUsername = username
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer))
+        this.peerConnection.createAnswer()
+            .then(answer => {
+                this.peerConnection.setLocalDescription(answer)
+                this.server.sendMessage({
+                    type: 'answer',
+                    answer: answer,
+                    otherUsername: this.otherUsername
+                })
+            })
+            .catch(error => {
+                alert('Error when creating an answer')
+                console.error('Error creating answer: ' + error)
+            })
+    }
+
+    handleAnswer = answer => {
+        this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
+    }
+
+    handleCandidate = candidate => {
+        this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+    }
+
+    handleClose = () => {
+        this.otherUsername = null
+        this.rVideo.stop()
+        this.rVideo.srcObject = null
+        this.peerConnection.close()
+        this.peerConnection.onicecandidate = null
+        this.peerConnection.onaddstream = null
+    }
+
+    connect() {
+        if (!this.connected) {
+
+            this.server.sendMessage({ type: 'login', username: this.username })
+
+            this.btnConnection = "Disconnect"
+
+        } else {
+            this.server.sendMessage({ type: 'close' })
+            this.btnConnection = "Connect"
+        }
+        this.connected = !this.connected
+    }
+
+    makeCall() {
+        this.otherUsername = 'Support'
+        this.peerConnection.createOffer()
+            .then(offer => {
+                this.server.sendMessage({
+                    type: 'offer',
+                    offer: offer,
+                    otherUsername: this.otherUsername
+                })
+                this.peerConnection.setLocalDescription(offer)
+            })
+            .catch(error => console.error('Error creating an offer: ' + error))
+    }
+
+    answerCall() {
+        if (this.remoteStream != null) {
+            this.rVideo.play()
+        }
     }
 }

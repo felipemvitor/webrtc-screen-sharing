@@ -8,7 +8,8 @@ import {
     MatCardModule,
     MatButtonModule,
     MatProgressBarModule,
-    MatIconModule
+    MatIconModule,
+    MatGridListModule,
 } from '@angular/material'
 
 import { VideoConferenceComponent } from './video-conference/video-conference.component'
@@ -24,7 +25,8 @@ import { VideoConferenceComponent } from './video-conference/video-conference.co
         MatCardModule,
         MatButtonModule,
         MatProgressBarModule,
-        MatIconModule
+        MatIconModule,
+        MatGridListModule
     ],
     providers: [],
     bootstrap: [AppComponent]
