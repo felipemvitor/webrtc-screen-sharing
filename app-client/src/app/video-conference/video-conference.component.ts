@@ -9,7 +9,7 @@ import { SignalingService } from '../signaling.service';
 export class VideoConferenceComponent implements OnInit {
 
     username = "Client"
-    otherUsername:any
+    otherUsername: any
 
     @ViewChild('localVideo', { static: true }) localVideo: any
     @ViewChild('remoteVideo', { static: true }) remoteVideo: any
@@ -95,25 +95,30 @@ export class VideoConferenceComponent implements OnInit {
         if (success === false) {
             alert('Username already taken')
         } else {
-            this.localStream = await navigator.mediaDevices.getUserMedia(this.mediaStreamConstraints)
-            this.lVideo.srcObject = this.localStream
-            this.lVideo.play()
+            // this.localStream = await navigator.mediaDevices.getUserMedia(this.mediaStreamConstraints)
+            // this.lVideo.srcObject = this.localStream
+            // this.lVideo.play()
 
-            this.peerConnection = new RTCPeerConnection(this.rtcConfig)
-            this.peerConnection.addStream(this.localStream)
-            this.peerConnection.onaddstream = (event => {
-                this.rVideo.srcObject = event.stream
-                this.remoteStream = event.stream
-            })
-            this.peerConnection.onicecandidate = event => {
-                if (event.candidate) {
-                    this.server.sendMessage({
-                        type: 'candidate',
-                        candidate: event.candidate,
-                        otherUsername: this.otherUsername
-                    })
-                }
+            if (navigator.getDisplayMedia) {
+                console.log('navigator.getDisplayMedia')
+                navigator.getDisplayMedia(this.mediaStreamConstraints).then(screenStream => {
+                    this.localStream = screenStream
+                    this.lVideo.srcObject = this.localStream
+                    this.lVideo.play()
+                    this.configurePeerConnection()
+                })
+
+            } else if (navigator.mediaDevices.getDisplayMedia) {
+                console.log('navigator.mediaDevices.getDisplayMedia')
+                navigator.mediaDevices.getDisplayMedia(this.mediaStreamConstraints).then(screenStream => {
+                    this.localStream = screenStream
+                    this.lVideo.srcObject = this.localStream
+                    this.lVideo.play().then()
+                    this.configurePeerConnection()
+                })
             }
+
+
         }
     }
 
@@ -150,6 +155,25 @@ export class VideoConferenceComponent implements OnInit {
         this.peerConnection.close()
         this.peerConnection.onicecandidate = null
         this.peerConnection.onaddstream = null
+    }
+
+    configurePeerConnection = () => {
+        console.log('Configuring peer connection')
+        this.peerConnection = new RTCPeerConnection(this.rtcConfig)
+        this.peerConnection.addStream(this.localStream)
+        this.peerConnection.onaddstream = (event => {
+            this.rVideo.srcObject = event.stream
+            this.remoteStream = event.stream
+        })
+        this.peerConnection.onicecandidate = event => {
+            if (event.candidate) {
+                this.server.sendMessage({
+                    type: 'candidate',
+                    candidate: event.candidate,
+                    otherUsername: this.otherUsername
+                })
+            }
+        }
     }
 
     connect() {
