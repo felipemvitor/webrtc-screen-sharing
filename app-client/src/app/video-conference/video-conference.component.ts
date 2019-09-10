@@ -99,25 +99,22 @@ export class VideoConferenceComponent implements OnInit {
             // this.lVideo.srcObject = this.localStream
             // this.lVideo.play()
 
-            if (navigator.getDisplayMedia) {
-                console.log('navigator.getDisplayMedia')
-                navigator.getDisplayMedia(this.mediaStreamConstraints).then(screenStream => {
-                    this.localStream = screenStream
-                    this.lVideo.srcObject = this.localStream
-                    this.lVideo.play()
-                    this.configurePeerConnection()
-                })
+            try {
+                const mediaDevices:any = navigator.mediaDevices
 
-            } else if (navigator.mediaDevices.getDisplayMedia) {
-                console.log('navigator.mediaDevices.getDisplayMedia')
-                navigator.mediaDevices.getDisplayMedia(this.mediaStreamConstraints).then(screenStream => {
-                    this.localStream = screenStream
-                    this.lVideo.srcObject = this.localStream
-                    this.lVideo.play().then()
-                    this.configurePeerConnection()
-                })
+                if (mediaDevices.getDisplayMedia) {
+                    console.log('navigator.mediaDevices.getDisplayMedia')
+                    mediaDevices.getDisplayMedia(this.mediaStreamConstraints).then(screenStream => {
+                        this.localStream = screenStream
+                        this.lVideo.srcObject = this.localStream
+                        this.lVideo.play().then()
+                        this.configurePeerConnection()
+                    })
+                }
+
+            } catch (error) {
+                console.log('error : ' + error)
             }
-
 
         }
     }
